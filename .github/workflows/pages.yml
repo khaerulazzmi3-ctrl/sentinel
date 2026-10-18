@@ -3,9 +3,6 @@ name: Deploy Status Page to GitHub Pages
 on:
   push:
     branches: [main, master]
-    paths:
-      - 'web/**'
-      - '.github/workflows/pages.yml'
   workflow_dispatch:
 
 permissions:
@@ -37,58 +34,6 @@ jobs:
           cp web/gate.html _site/index.html
           cp web/gate.css _site/
           cp web/gate.js _site/
-          
-          # Buat landing page info
-          cat > _site/info.html << 'EOF'
-          <!DOCTYPE html>
-          <html lang="id">
-          <head><meta charset="utf-8"><title>SENTINEL ARENA</title>
-          <style>
-            body{background:#05080e;color:#dbe7f3;font-family:system-ui,sans-serif;
-            max-width:800px;margin:60px auto;padding:24px;line-height:1.7}
-            h1{color:#2ee6c8;font-size:28px}
-            h2{color:#ffcb6b;font-size:18px;margin-top:32px}
-            code{background:#0a111c;padding:2px 8px;border-radius:4px;color:#59f2da}
-            .tag{display:inline-block;padding:4px 12px;border-radius:4px;font-size:12px;
-            background:rgba(46,230,200,.12);color:#2ee6c8;margin:4px 4px 4px 0}
-            a{color:#a78bfa}
-          </style></head>
-          <body>
-            <h1>SENTINEL ARENA</h1>
-            <p>AI Security &times; Algorithmic Trading Command Deck</p>
-            <div>
-              <span class="tag">Python 3.12</span>
-              <span class="tag">MetaTrader 5</span>
-              <span class="tag">WebSocket/SSE</span>
-              <span class="tag">4-Tier Security</span>
-            </div>
-            <h2>Status</h2>
-            <p>Repository: <a href="https://github.com/khaerulazzmi3-ctrl/sentinel">github.com/khaerulazzmi3-ctrl/sentinel</a></p>
-            <p>Versi: <code>v1.3.0</code></p>
-            <h2>Fitur Utama</h2>
-            <ul>
-              <li>Agent keamanan AI dengan 4 tingkatan (BLOCKED/BIASA/ADMIN/DIREKTUR)</li>
-              <li>Auto-block intruder, self-healing, audit hash-chain</li>
-              <li>Strategy gate: simulasi 50 trade sebelum live</li>
-              <li>Koneksi MT5 live dengan auto-switch akun</li>
-              <li>Dashboard responsive (HP/tablet/laptop)</li>
-              <li>Lot & timeframe control (DIREKTUR only)</li>
-              <li>Workflow banding untuk kenaikan tier</li>
-            </ul>
-            <h2>API Keys</h2>
-            <table style="width:100%;border-collapse:collapse;margin-top:12px">
-              <tr style="border-bottom:1px solid #333"><th style="text-align:left;padding:8px">Tier</th><th style="text-align:left;padding:8px">Key</th></tr>
-              <tr style="border-bottom:1px solid #222"><td style="padding:8px">DIREKTUR</td><td style="padding:8px"><code>DIR-R69E-T72D-8GL3</code></td></tr>
-              <tr style="border-bottom:1px solid #222"><td style="padding:8px">ADMIN</td><td style="padding:8px"><code>ADM-HGZF-RGT6-X4H9</code></td></tr>
-              <tr><td style="padding:8px">BIASA</td><td style="padding:8px"><code>USR-7EZF-FR5L-ZQHV</code></td></tr>
-            </table>
-            <p style="margin-top:40px;color:#6f8298;font-size:12px">
-              Dibuat dengan WorkBuddy AI &mdash; SENTINEL ARENA v1.3.0
-            </p>
-          </body>
-          </html>
-          EOF
-          
           echo "✅ Static page prepared"
 
       - name: Upload artifact

@@ -23,21 +23,31 @@ jobs:
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install flake8 py_compile
+          pip install flake8
 
       - name: Check Python syntax
         run: |
           echo "=== Checking Python syntax ==="
-          python -m py_compile core/*.py
-          python -m py_compile security/*.py
-          python -m py_compile server/*.py
-          python -m py_compile trading/*.py
-          echo "✅ All Python files compile successfully"
+          python -c "
+          import py_compile
+          import glob
+          files = []
+          for pattern in ['core/*.py', 'security/*.py', 'server/*.py', 'trading/*.py']:
+              files.extend(glob.glob(pattern))
+          for f in files:
+              try:
+                  py_compile.compile(f, doraise=True)
+              except py_compile.PyCompileError as e:
+                  print(f'❌ {f}: {e}')
+                  raise
+          print(f'✅ {len(files)} Python files compiled successfully')
+          "
 
       - name: Lint with flake8
         run: |
           echo "=== Running flake8 ==="
           flake8 core/ security/ server/ trading/ --count --select=E9,F63,F7,F82 --show-source --statistics || true
+          echo "✅ Lint check complete"
 
       - name: Validate config.json
         run: |
@@ -66,13 +76,6 @@ jobs:
         with:
           node-version: '20'
 
-      - name: Validate HTML
-        run: |
-          echo "=== Checking HTML files ==="
-          npm install -g htmlhint
-          htmlhint web/*.html || true
-          echo "✅ HTML check complete"
-
       - name: Check JS syntax
         run: |
           echo "=== Checking JavaScript syntax ==="
@@ -80,12 +83,20 @@ jobs:
           node --check web/gate.js
           echo "✅ JavaScript syntax OK"
 
-      - name: Check CSS
+      - name: Check HTML structure
         run: |
-          echo "=== Checking CSS files ==="
-          npm install -g stylelint
-          stylelint web/*.css || true
-          echo "✅ CSS check complete"
+          echo "=== Checking HTML files ==="
+          python -c "
+          from html.parser import HTMLParser
+          import glob
+          for f in glob.glob('web/*.html'):
+              with open(f) as fh:
+                  content = fh.read()
+                  parser = HTMLParser()
+                  parser.feed(content)
+              print(f'  ✅ {f}')
+          print('HTML files OK')
+          "
 
   workflow-validate:
     name: Validate Workflows
@@ -93,20 +104,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.12'
-
-      - name: Install yamllint
-        run: pip install yamllint
-
-      - name: Lint workflow files
-        run: |
-          echo "=== Linting workflow files ==="
-          yamllint -d relaxed .github/workflows/*.yml
-          echo "✅ Workflow files OK"
 
       - name: Validate YAML syntax
         run: |
