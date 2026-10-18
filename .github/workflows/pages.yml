@@ -1,4 +1,4 @@
-name: Deploy Status Page to GitHub Pages
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -6,132 +6,31 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
-  pages: write
-  id-token: write
-
-concurrency:
-  group: "pages"
-  cancel-in-progress: false
+  contents: write
 
 jobs:
-  build:
+  deploy:
     runs-on: ubuntu-latest
-    name: Build Static Page
+    name: Deploy Static Page
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare static page
+      - name: Prepare page
         run: |
           mkdir -p _site
           
-          # Copy gate page jika ada
-          if [ -f web/gate.html ]; then
-            cp web/gate.html _site/index.html
-            cp web/gate.css _site/ 2>/dev/null || true
-            cp web/gate.js _site/ 2>/dev/null || true
-            echo "✅ Gate page copied"
-          else
-            # Fallback: buat landing page sederhana
-            cat > _site/index.html << 'HTMLEOF'
-<!DOCTYPE html>
-<html lang="id">
-<head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SENTINEL ARENA</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{
-  background:#05080e;
-  color:#dbe7f3;
-  font-family:system-ui,-apple-system,sans-serif;
-  line-height:1.6;
-  min-height:100vh;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding:24px;
-}
-.card{
-  max-width:500px;
-  width:100%;
-  background:rgba(10,17,29,.9);
-  border:1px solid rgba(46,230,200,.2);
-  border-radius:12px;
-  padding:32px;
-}
-h1{
-  color:#2ee6c8;
-  font-size:24px;
-  margin-bottom:8px;
-}
-p{color:#6f8298;margin-bottom:16px}
-.tag{
-  display:inline-block;
-  padding:4px 12px;
-  border-radius:4px;
-  font-size:12px;
-  background:rgba(46,230,200,.12);
-  color:#2ee6c8;
-  margin:4px 4px 4px 0;
-}
-.btn{
-  display:inline-block;
-  padding:10px 20px;
-  background:#2ee6c8;
-  color:#05080e;
-  text-decoration:none;
-  border-radius:6px;
-  font-weight:600;
-  margin-top:16px;
-}
-.btn:hover{opacity:.9}
-.info{
-  margin-top:20px;
-  padding-top:20px;
-  border-top:1px solid rgba(46,230,200,.1);
-  font-size:13px;
-  color:#6f8298;
-}
-</style>
-</head>
-<body>
-<div class="card">
-  <h1>SENTINEL ARENA</h1>
-  <p>AI Security &times; Algorithmic Trading Command Deck</p>
-  <div>
-    <span class="tag">v1.3.0</span>
-    <span class="tag">4-Tier Security</span>
-    <span class="tag">MT5 Live</span>
-    <span class="tag">Auto-Trading</span>
-  </div>
-  <div class="info">
-    <p><strong>Status:</strong> Agent sedang berjalan</p>
-    <p><strong>Dashboard:</strong> Akses dari jaringan lokal Anda</p>
-    <p><strong>Repository:</strong> github.com/khaerulazzmi3-ctrl/sentinel</p>
-  </div>
-</div>
-</body>
-</html>
-HTMLEOF
-            echo "✅ Fallback page created"
-          fi
+          # Copy gate page assets
+          cp web/gate.html _site/index.html
+          cp web/gate.css _site/ 2>/dev/null || true
+          cp web/gate.js _site/ 2>/dev/null || true
+          
+          # List what we have
+          echo "Files in _site:"
+          ls -la _site/
 
-      - name: Upload artifact
-        uses: actions/upload-pages-artifact@v3
+      - name: Deploy
+        uses: peaceiris/actions-gh-pages@v3
         with:
-          path: '_site'
-
-  deploy:
-    environment:
-      name: github-pages
-      url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
-    name: Deploy ke GitHub Pages
-    steps:
-      - name: Deploy to GitHub Pages
-        id: deployment
-        uses: actions/deploy-pages@v4
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./_site
