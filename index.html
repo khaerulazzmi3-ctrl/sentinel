@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SENTINEL ARENA — Akses Operator</title>
+<link rel="stylesheet" href="/gate.css">
+</head>
+<body>
+<div class="scan"></div>
+
+<main class="gate">
+  <div class="brand">
+    <div class="sigil">◈</div>
+    <div>
+      <h1>SENTINEL ARENA</h1>
+      <p class="sub">SECURITY × TRADING COMMAND DECK</p>
+    </div>
+  </div>
+
+  <form id="form" autocomplete="off">
+    <label class="lbl" for="key">API KEY</label>
+    <input id="key" name="key" type="text" spellcheck="false" autocapitalize="characters"
+           autocomplete="off" placeholder="DIR-XXXX-XXXX-XXXX" required>
+
+    <p class="lbl mt">MASUK SEBAGAI</p>
+    <div class="tiers" id="tiers" role="radiogroup" aria-label="Tier operator">
+      <button type="button" class="tier" data-tier="BIASA" role="radio" aria-checked="false">
+        <span class="n">01</span>
+        <span class="t">BIASA</span>
+        <span class="d">lihat dashboard, tanpa aksi</span>
+      </button>
+      <button type="button" class="tier" data-tier="ADMIN" role="radio" aria-checked="false">
+        <span class="n">02</span>
+        <span class="t">ADMIN</span>
+        <span class="d">cabut blokir, naikkan ke BIASA/ADMIN, pause &amp; kill</span>
+      </button>
+      <button type="button" class="tier" data-tier="DIREKTUR" role="radio" aria-checked="false">
+        <span class="n">03</span>
+        <span class="t">DIREKTUR</span>
+        <span class="d">semua aksi, termasuk mengangkat DIREKTUR</span>
+      </button>
+    </div>
+
+    <button class="go" id="go" type="submit">MASUK</button>
+    <p class="status" id="status"></p>
+  </form>
+
+  <div class="foot">
+    <div><b>Kunci dan tier harus cocok.</b> Kunci BIASA tidak bisa mengaku DIREKTUR.</div>
+    <div>5 percobaan gagal berturut-turut = identitas ini diblokir otomatis oleh SENTINEL.</div>
+    <div class="mono" id="who">—</div>
+  </div>
+</main>
+
+<script src="/gate.js"></script>
+</body>
+</html>
