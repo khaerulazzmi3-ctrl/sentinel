@@ -1,0 +1,71 @@
+name: Docker Build & Deploy
+
+on:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Build Docker Image
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Extract version
+        id: meta
+        run: |
+          VERSION=$(echo "${GITHUB_REF#refs/tags/}" | sed 's/^v//')
+          if [ "$VERSION" = "$GITHUB_REF" ]; then VERSION="latest"; fi
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+
+      - name: Build and push
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          tags: |
+            ${{ secrets.DOCKER_USERNAME }}/sentinel-arena:${{ steps.meta.outputs.version }}
+            ${{ secrets.DOCKER_USERNAME }}/sentinel-arena:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    name: Deploy ke VPS
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            echo "=== DOCKER DEPLOY ==="
+            docker pull ${{ secrets.DOCKER_USERNAME }}/sentinel-arena:latest
+            docker stop sentinel-arena 2>/dev/null || true
+            docker rm sentinel-arena 2>/dev/null || true
+            docker run -d \
+              --name sentinel-arena \
+              --restart unless-stopped \
+              -p 8787:8787 \
+              -v /opt/sentinel-arena/data:/app/data \
+              -v /opt/sentinel-arena/logs:/app/logs \
+              -e ARENA_OPERATOR_KEYS='${{ secrets.ARENA_OPERATOR_KEYS }}' \
+              -e ARENA_PROMOTION_CODE='${{ secrets.ARENA_PROMOTION_CODE }}' \
+              ${{ secrets.DOCKER_USERNAME }}/sentinel-arena:latest
+            sleep 5
+            docker ps | grep sentinel-arena && echo "✅ Container aktif" || echo "❌ Container gagal start"

@@ -1,0 +1,28 @@
+[Unit]
+Description=SENTINEL ARENA - AI security and trading agents
+Documentation=file:///opt/sentinel-arena/README.md
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/sentinel-arena
+# keys from the environment, never from disk
+Environment=ARENA_OPERATOR_KEYS={"dir-CHANGE-ME":"DIREKTUR","adm-CHANGE-ME":"ADMIN"}
+Environment=ARENA_PROMOTION_CODE=CHANGE-ME
+ExecStart=/usr/bin/python3 /opt/sentinel-arena/run_forever.py
+Restart=always
+RestartSec=5
+KillSignal=SIGTERM
+TimeoutStopSec=25
+StandardOutput=append:/opt/sentinel-arena/logs/systemd.log
+StandardError=append:/opt/sentinel-arena/logs/systemd.log
+
+# basic hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=full
+ReadWritePaths=/opt/sentinel-arena/data /opt/sentinel-arena/logs
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,50 @@
+name: Deploy to VPS
+
+on:
+  push:
+    branches: [main, master]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    name: Deploy ke VPS
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          port: ${{ secrets.VPS_PORT || 22 }}
+          script: |
+            echo "=== DEPLOY SENTINEL ARENA ==="
+            cd /opt/sentinel-arena
+            
+            # Backup state sebelum update
+            cp data/state.json data/state.json.backup.$(date +%Y%m%d_%H%M%S) 2>/dev/null || true
+            
+            # Pull update terbaru
+            git fetch origin
+            git reset --hard origin/main || git reset --hard origin/master
+            
+            # Install dependency baru kalau ada
+            pip install -r requirements.txt 2>/dev/null || true
+            
+            # Restart service
+            systemctl restart sentinel-arena 2>/dev/null || supervisorctl restart sentinel-arena 2>/dev/null || python run_forever.py --public &
+            
+            # Verifikasi port aktif
+            sleep 5
+            if ss -tlnp | grep -q ':8787'; then
+              echo "✅ Agent aktif di port 8787"
+            else
+              echo "⚠️ Port 8787 tidak aktif, cek log:"
+              tail -20 logs/arena.log 2>/dev/null || echo "Log tidak ditemukan"
+              exit 1
+            fi
+            
+            echo "=== DEPLOY SELESAI ==="

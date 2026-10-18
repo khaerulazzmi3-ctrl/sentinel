@@ -1,0 +1,123 @@
+{
+  "system": {
+    "name": "SENTINEL ARENA",
+    "host": "127.0.0.1",
+    "port": 8787,
+    "tick_seconds": 1.0,
+    "bar_seconds": 6.0
+  },
+  "security": {
+    "auto_block_score": 60,
+    "rate_limit_per_min": 90,
+    "auth_fail_threshold": 5,
+    "canary_rotation_seconds": 120,
+    "operator_keys": {
+      "DIR-R69E-T72D-8GL3": "DIREKTUR",
+      "ADM-HGZF-RGT6-X4H9": "ADMIN",
+      "USR-7EZF-FR5L-ZQHV": "BIASA"
+    },
+    "promotion_code": "ARENA-DIRECTOR-77"
+  },
+  "trading": {
+    "initial_balance": 100000.0,
+    "risk_per_trade_pct": 0.3,
+    "max_open_positions": 6,
+    "max_per_class": {
+      "FOREX": 3,
+      "COMMODITY": 1
+    },
+    "daily_loss_limit_pct": 4.0,
+    "max_portfolio_heat_pct": 3.0,
+    "symbols": [
+      {
+        "symbol": "EURUSD",
+        "klass": "FOREX",
+        "pip": 0.0001,
+        "spread_pips": 1.1,
+        "commission_pips": 0.7,
+        "digits": 5
+      },
+      {
+        "symbol": "GBPUSD",
+        "klass": "FOREX",
+        "pip": 0.0001,
+        "spread_pips": 1.4,
+        "commission_pips": 0.8,
+        "digits": 5
+      },
+      {
+        "symbol": "USDJPY",
+        "klass": "FOREX",
+        "pip": 0.01,
+        "spread_pips": 1.2,
+        "commission_pips": 0.7,
+        "digits": 3
+      },
+      {
+        "symbol": "AUDUSD",
+        "klass": "FOREX",
+        "pip": 0.0001,
+        "spread_pips": 1.5,
+        "commission_pips": 0.8,
+        "digits": 5
+      },
+      {
+        "symbol": "XAUUSD",
+        "klass": "COMMODITY",
+        "pip": 0.1,
+        "spread_pips": 2.2,
+        "commission_pips": 1.0,
+        "digits": 2
+      },
+      {
+        "symbol": "XAGUSD",
+        "klass": "COMMODITY",
+        "pip": 0.01,
+        "spread_pips": 3.0,
+        "commission_pips": 1.0,
+        "digits": 3
+      },
+      {
+        "symbol": "WTIUSD",
+        "klass": "COMMODITY",
+        "pip": 0.01,
+        "spread_pips": 3.5,
+        "commission_pips": 1.2,
+        "digits": 3
+      },
+      {
+        "symbol": "COPPER",
+        "klass": "COMMODITY",
+        "pip": 0.001,
+        "spread_pips": 2.5,
+        "commission_pips": 1.0,
+        "digits": 4
+      }
+    ]
+  },
+  "gate": {
+    "sample_trades": 50,
+    "min_trades": 50,
+    "min_profit_factor": 1.25,
+    "min_sharpe": 1.0,
+    "max_drawdown_pct": 18.0,
+    "min_win_rate": 30.0,
+    "min_oos_folds_passing": 3,
+    "min_mc_probability": 0.85
+  },
+  "mt5": {
+    "enabled": true,
+    "terminal_path": "C:\\Program Files\\MetaTrader 5\\terminal64.exe",
+    "login": 0,
+    "password": "",
+    "server": "",
+    "symbol_suffix": "",
+    "magic": 771001,
+    "trade_enabled": true,
+    "allow_min_lot": true,
+    "poll_seconds": 1.0,
+    "retry_seconds": 15.0,
+    "history_bars": 3000,
+    "max_risk_pct_hard": 2.0
+  }
+}

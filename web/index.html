@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>SENTINEL ARENA — Security × Trading Command Deck</title>
+<link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+<div class="fx-grid"></div>
+<div class="fx-glow"></div>
+<div class="fx-scan"></div>
+
+<header class="hud">
+  <div class="brand">
+    <svg class="mark" viewBox="0 0 48 48" aria-hidden="true">
+      <path d="M24 3 43 12v14c0 11-8 17-19 19C13 43 5 37 5 26V12z" fill="none" stroke="currentColor" stroke-width="1.6"/>
+      <path d="M24 10 36 16v10c0 7-5 11-12 13-7-2-12-6-12-13V16z" fill="none" stroke="currentColor" stroke-width="1" opacity=".55"/>
+      <path d="M16 24h5l2-6 3 12 2-6h4" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/>
+    </svg>
+    <div class="brand-txt">
+      <h1>SENTINEL<span>ARENA</span></h1>
+      <p>AI Security × Algorithmic Trading Command Deck</p>
+    </div>
+  </div>
+  <div class="hud-right">
+    <div class="chip" id="modeChip" title="Execution venue">—</div>
+    <div class="clock">
+      <b id="clock">--:--:--</b>
+      <span id="uptime">uptime —</span>
+    </div>
+    <div class="conn" id="conn"><i></i><span>CONNECTING</span></div>
+    <div class="op">
+      <span>OPERATOR</span>
+      <b id="tierChip" class="tier-chip">—</b>
+      <button class="btn ghost" id="btnLogout" title="Akhiri sesi ini">KELUAR</button>
+    </div>
+  </div>
+</header>
+
+<div class="warn-bar" id="warnBar" hidden></div>
+
+<section class="kpis">
+  <div class="kpi">
+    <div class="kpi-top"><label>EQUITY</label><span class="tag" id="kpiMode">PAPER</span></div>
+    <b id="kpiEquity">—</b>
+    <span class="kpi-sub" id="kpiEquitySub">—</span>
+    <canvas class="spark" id="sparkEquity"></canvas>
+  </div>
+  <div class="kpi">
+    <div class="kpi-top"><label>PnL HARI INI</label><span class="tag" id="kpiPnlPct">—</span></div>
+    <b id="kpiPnl">—</b>
+    <span class="kpi-sub" id="kpiPnlSub">unrealized —</span>
+    <canvas class="spark" id="sparkPnl"></canvas>
+  </div>
+  <div class="kpi">
+    <div class="kpi-top"><label>PORTFOLIO HEAT</label><span class="tag" id="kpiHeatCap">cap —</span></div>
+    <b id="kpiHeat">—</b>
+    <div class="bar"><i id="heatBar"></i></div>
+    <span class="kpi-sub" id="kpiPos">posisi —</span>
+  </div>
+  <div class="kpi">
+    <div class="kpi-top"><label>ANCAMAN DIBLOKIR</label><span class="tag danger" id="kpiIntegrity">—</span></div>
+    <b id="kpiBlocked">—</b>
+    <span class="kpi-sub" id="kpiThreats">—</span>
+    <div class="mini-ladder" id="miniLadder"></div>
+  </div>
+</section>
+
+<main class="grid">
+  <aside class="col">
+    <section class="panel agent" id="secAgent">
+      <div class="panel-head">
+        <div class="who">
+          <div class="avatar sec"><svg viewBox="0 0 24 24"><path d="M12 2 21 6v7c0 5-4 8-9 9-5-1-9-4-9-9V6z" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8.5 12.2l2.4 2.4 4.6-4.8" fill="none" stroke="currentColor" stroke-width="1.6"/></svg></div>
+          <div><h2>SENTINEL</h2><p>Security Agent</p></div>
+        </div>
+        <span class="status" id="secStatus">—</span>
+      </div>
+      <div class="agent-meta">
+        <div><span>INTEGRITAS</span><b id="secIntegrity">—</b></div>
+        <div><span>WAF</span><b id="secWaf">—</b></div>
+        <div><span>REQUEST</span><b id="secReq">—</b></div>
+      </div>
+      <div class="ladder" id="ladder"></div>
+      <div class="panel-foot">
+        <span class="hint">Blokir otomatis tanpa instruksi admin · promosi hanya oleh admin/direktur</span>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h3>CANARY &amp; SELF-HEAL</h3><span class="tiny" id="canaryTimer">—</span></div>
+      <div class="canary" id="canaryList"></div>
+      <div class="heals" id="healList"></div>
+      <div class="panel-foot"><span class="hint">Tautan jebakan: buka salah satu di jendela incognito — identitas itu langsung diblokir, tanpa menunggu admin.</span></div>
+    </section>
+
+    <section class="panel" id="panelDirector" hidden>
+      <div class="panel-head"><h3>KONTROL DIREKTUR</h3><span class="tiny">lot &amp; timeframe</span></div>
+      <div class="ctrl-row">
+        <label>FOREX Lot</label>
+        <input type="number" id="lotForex" step="0.01" min="0" placeholder="auto" />
+        <button class="btn" id="btnLotForex">Set</button>
+      </div>
+      <div class="ctrl-row">
+        <label>COMMODITY Lot</label>
+        <input type="number" id="lotCommodity" step="0.01" min="0" placeholder="auto" />
+        <button class="btn" id="btnLotCommodity">Set</button>
+      </div>
+      <div class="ctrl-row">
+        <label>FOREX TF</label>
+        <select id="tfForex">
+          <option value="">default</option><option>M1</option><option>M5</option><option>M15</option><option>H1</option><option>H4</option>
+        </select>
+        <button class="btn" id="btnTfForex">Set</button>
+      </div>
+      <div class="ctrl-row">
+        <label>COMMODITY TF</label>
+        <select id="tfCommodity">
+          <option value="">default</option><option>M1</option><option>M5</option><option>M15</option><option>H1</option><option>H4</option>
+        </select>
+        <button class="btn" id="btnTfCommodity">Set</button>
+      </div>
+    </section>
+
+    <section class="panel" id="panelAppeal" hidden>
+      <div class="panel-head"><h3>AJUKAN BANDING</h3><span class="tiny">naikkan tingkatan</span></div>
+      <p class="hint" style="margin:0 0 8px">Anda bisa mengajukan banding untuk naik ke ADMIN atau DIREKTUR.</p>
+      <div class="ctrl-row">
+        <label>Target</label>
+        <select id="appealTarget"><option>ADMIN</option><option>DIREKTUR</option></select>
+      </div>
+      <div class="ctrl-row">
+        <label>Alasan</label>
+        <input type="text" id="appealReason" placeholder="saya butuh akses karena..." />
+      </div>
+      <button class="btn" id="btnAppeal">Kirim Banding</button>
+      <div id="appealStatus" class="hint" style="margin-top:6px"></div>
+    </section>
+
+    <section class="panel" id="panelAppeals" hidden>
+      <div class="panel-head"><h3>BANDING MASUK</h3><span class="tiny" id="appealCount">0</span></div>
+      <div id="appealsList"></div>
+    </section>
+  </aside>
+
+  <section class="col wide">
+    <section class="panel chart-panel">
+      <div class="panel-head">
+        <h3>LIVE EQUITY / PnL <span class="tiny" id="chartVenue">—</span></h3>
+        <div class="legend"><span class="dot eq"></span>equity<span class="dot pnl"></span>PnL harian</div>
+      </div>
+      <canvas id="pnlChart"></canvas>
+      <div class="chart-readout">
+        <div><span>BALANCE</span><b id="roBalance">—</b></div>
+        <div><span>UNREALIZED</span><b id="roUnreal">—</b></div>
+        <div><span>MARGIN</span><b id="roMargin">—</b></div>
+        <div><span>WIN RATE</span><b id="roWin">—</b></div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h3>POSISI TERBUKA</h3><span class="tiny" id="posCount">—</span></div>
+      <div class="table-wrap">
+        <table class="tbl" id="posTable">
+          <thead><tr><th>INSTRUMEN</th><th>SIDE</th><th>LOT</th><th>ENTRY</th><th>PRICE</th><th>R</th><th>PnL</th><th>STRATEGI</th></tr></thead>
+          <tbody></tbody>
+        </table>
+        <div class="empty" id="posEmpty">Tidak ada posisi terbuka — agent menunggu konfluensi.</div>
+      </div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h3>KEPUTUSAN AGENT</h3><span class="tiny">signal → risk check → order</span></div>
+      <div class="signals" id="signals"></div>
+    </section>
+  </section>
+
+  <aside class="col">
+    <section class="panel">
+      <div class="panel-head"><h3>THREAT FEED</h3><span class="live-pill">LIVE</span></div>
+      <div class="threats" id="threats"></div>
+    </section>
+
+    <section class="panel">
+      <div class="panel-head"><h3>AUDIT CHAIN</h3><span class="tiny" id="auditState">—</span></div>
+      <div class="audit" id="audit"></div>
+    </section>
+
+    <section class="panel control">
+      <div class="panel-head"><h3>KONTROL</h3><span class="tiny" id="authNote">—</span></div>
+      <div class="btns">
+        <div class="split">
+          <select id="attackKind">
+            <option value="canary">Canary link</option>
+            <option value="sqli">SQL injection</option>
+            <option value="scanner">Scanner bot</option>
+            <option value="traversal">Path traversal</option>
+            <option value="bruteforce">Brute force</option>
+          </select>
+          <button class="btn danger" id="btnAttack">Simulasi Serangan</button>
+        </div>
+        <button class="btn" id="btnPause">Pause Trading</button>
+        <button class="btn kill" id="btnKill">KILL SWITCH</button>
+        <button class="btn ghost" id="btnRevalidate">Uji Ulang Semua</button>
+      </div>
+    </section>
+  </aside>
+</main>
+
+<section class="panel matrix-panel">
+  <div class="panel-head">
+    <h3>STRATEGY GATE MATRIX <span class="tiny">strategi hanya boleh dipakai setelah lolos simulasi</span></h3>
+    <div class="legend status-legend">
+      <span><i class="sw ok"></i>VALIDATED</span>
+      <span><i class="sw prob"></i>PROBATION</span>
+      <span><i class="sw bad"></i>FAILED</span>
+      <span><i class="sw wait"></i>PENDING</span>
+    </div>
+  </div>
+  <div class="uni-bar" id="uniBar">—</div>
+  <div class="matrix" id="matrix"></div>
+  <div class="panel-foot"><span class="hint">Klik sel untuk melihat detail uji: profit factor, Sharpe, drawdown, walk-forward 4 fold, Monte Carlo 2000 path.</span></div>
+</section>
+
+<footer class="ticker">
+  <span class="ticker-label">SYSTEM LOG</span>
+  <div class="ticker-track"><div id="ticker"></div></div>
+</footer>
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+    <div class="panel-head"><h3 id="modalTitle">—</h3><button class="x" id="modalClose">×</button></div>
+    <div class="modal-body" id="modalBody"></div>
+  </div>
+</div>
+
+<div class="toasts" id="toasts"></div>
+<script src="/app.js"></script>
+</body>
+</html>

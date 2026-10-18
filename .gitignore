@@ -1,0 +1,8 @@
+__pycache__/
+*.pyc
+data/
+logs/
+state.json
+s2.json
+atk.json
+shot.png
