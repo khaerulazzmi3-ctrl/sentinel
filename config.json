@@ -1,7 +1,7 @@
 {
   "system": {
     "name": "SENTINEL ARENA",
-    "host": "127.0.0.1",
+    "host": "0.0.0.0",
     "port": 8787,
     "tick_seconds": 1.0,
     "bar_seconds": 6.0
