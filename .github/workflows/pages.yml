@@ -6,31 +6,44 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: false
 
 jobs:
-  deploy:
+  build:
     runs-on: ubuntu-latest
-    name: Deploy Static Page
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Prepare page
+      - name: Setup Pages
+        uses: actions/configure-pages@v5
+
+      - name: Build static site
         run: |
           mkdir -p _site
-          
-          # Copy gate page assets
           cp web/gate.html _site/index.html
           cp web/gate.css _site/ 2>/dev/null || true
           cp web/gate.js _site/ 2>/dev/null || true
-          
-          # List what we have
-          echo "Files in _site:"
           ls -la _site/
 
-      - name: Deploy
-        uses: peaceiris/actions-gh-pages@v3
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./_site
+          path: _site
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
