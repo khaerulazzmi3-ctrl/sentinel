@@ -232,7 +232,8 @@ class Handler(BaseHTTPRequestHandler):
                     self._redirect("/")
                 else:
                     self._file(os.path.join(WEB_DIR, "index.html"))
-            elif path in ("/app.js", "/style.css", "/gate.js", "/gate.css"):
+            elif path in ("/app.js", "/style.css", "/gate.js", "/gate.css",
+                          "/manifest.json", "/sw.js", "/icon-192.svg", "/icon-512.svg"):
                 self._file(os.path.join(WEB_DIR, path.lstrip("/")))
             elif path == "/api/whoami":
                 self._whoami()

@@ -37,14 +37,69 @@
   const cls = (v) => v >= 0 ? 'pos' : 'neg';
 
   /* ------------------------------------------------ connection */
+  const SNAP_KEY = 'sentinel.lastState.v1';
+
+  function saveSnapshot(s) {
+    try {
+      localStorage.setItem(SNAP_KEY, JSON.stringify({ ts: Date.now(), data: s }));
+    } catch (e) { /* quota or private mode: not fatal */ }
+  }
+
+  function loadSnapshot() {
+    try {
+      const raw = localStorage.getItem(SNAP_KEY);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && parsed.data ? parsed : null;
+    } catch (e) { return null; }
+  }
+
+  function showStale(snap) {
+    const bar = $('staleBar');
+    if (!bar) return;
+    if (!snap) { bar.hidden = true; return; }
+    const age = Math.max(0, Math.round((Date.now() - snap.ts) / 1000));
+    const mins = Math.floor(age / 60), secs = age % 60;
+    const when = mins ? `${mins}m ${secs}s` : `${secs}s`;
+    $('staleText').textContent =
+      `data terakhir ${when} lalu — PC/agent tidak terjangkau, angka di bawah adalah snapshot`;
+    bar.hidden = false;
+  }
+
+  function hideStale() {
+    const bar = $('staleBar');
+    if (bar) bar.hidden = true;
+  }
+
+  function offline() {
+    setConn(false, 'OFFLINE');
+    const snap = loadSnapshot();
+    if (snap) { apply(snap.data); showStale(snap); }
+    else {
+      // nothing cached: say so instead of showing an empty dashboard
+      const bar = $('staleBar');
+      if (bar) {
+        $('staleText').textContent =
+          'belum ada snapshot tersimpan — buka dashboard sekali saat agent hidup';
+        bar.hidden = false;
+      }
+    }
+  }
+
   function connect() {
     if (es) { es.close(); es = null; }
     if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
     const url = '/api/stream';
     es = new EventSource(url);
-    es.onopen = () => setConn(true, 'LIVE');
+    es.onopen = () => { setConn(true, 'LIVE'); hideStale(); };
     es.onmessage = (ev) => {
-      try { apply(JSON.parse(ev.data)); setConn(true, 'LIVE'); } catch (e) { /* ignore */ }
+      try {
+        const s = JSON.parse(ev.data);
+        apply(s);
+        saveSnapshot(s);
+        hideStale();
+        setConn(true, 'LIVE');
+      } catch (e) { /* ignore */ }
     };
     es.onerror = () => {
       setConn(false, 'RETRY');
@@ -57,8 +112,16 @@
     const tick = async () => {
       try {
         const r = await fetch('/api/state');
-        if (r.ok) { apply(await r.json()); setConn(true, 'POLL'); }
-      } catch (e) { setConn(false, 'OFFLINE'); }
+        if (r.ok) {
+          const s = await r.json();
+          apply(s);
+          saveSnapshot(s);
+          hideStale();
+          setConn(true, 'POLL');
+        } else {
+          offline();
+        }
+      } catch (e) { offline(); }
     };
     tick();
     pollTimer = setInterval(tick, 2000);
@@ -571,8 +634,27 @@
   }
 
   async function boot() {
+    // register the offline shell first so a reload with no server still works
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.register('/sw.js').catch(() => null);
+    }
+
     const op = await whoami();
-    if (!op) { location.replace('/'); return; }
+    if (!op) {
+      // whoami failed: could be no session OR the agent is down.
+      // if we have a snapshot, show it stale instead of bouncing to a dead gate.
+      const snap = loadSnapshot();
+      if (snap) {
+        authed = true;
+        paintTier((snap.data && snap.data.operator) || { tier: 'OFFLINE', level: 0 });
+        apply(snap.data);
+        showStale(snap);
+        setConn(false, 'OFFLINE');
+        return;
+      }
+      location.replace('/');
+      return;
+    }
     authed = true;
     paintTier(op);
     connect();

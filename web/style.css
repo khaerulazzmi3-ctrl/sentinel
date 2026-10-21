@@ -249,6 +249,15 @@ select:focus{border-color:var(--cy)}
 .warn-bar[hidden]{display:none}
 .warn-bar::before{content:"▲";margin-right:8px;color:var(--gold,var(--amber))}
 
+/* offline snapshot banner: server unreachable, showing the last cached state */
+.stale-bar{margin:10px 14px 0;padding:9px 12px;border:1px solid rgba(167,139,250,.45);
+  border-left-width:3px;background:rgba(167,139,250,.1);color:#d8ccff;
+  font-family:var(--mono);font-size:10px;letter-spacing:.06em;line-height:1.5;
+  display:flex;flex-wrap:wrap;align-items:center;gap:8px}
+.stale-bar[hidden]{display:none}
+.stale-bar b{color:var(--violet);letter-spacing:.14em;font-size:9px}
+.stale-bar::before{content:"◌";margin-right:2px;color:var(--violet);font-size:13px}
+
 /* ---------------- warning banner end ---------------- */
 
 .matrix-panel{margin-top:12px}
